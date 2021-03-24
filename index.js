@@ -7,14 +7,21 @@ const fs          = require('fs');
 
 /*----------  CONFIG  ----------*/
 
-const csvFilePath = 'numeros.csv';
 const text        = new Date().toLocaleString() + "\n" +"msg de prueba";
+
+// const csvFilePath = 'contacto3_1001-14000.csv';
+const csvFilePath = 'numeros.csv';
 const name_field  = "NAME"; //header on csv file
 const phone_field = "PHONE"; //header on csv file
+//wait some random seconds to simulate human behaviour
+const max         = 10; //max seconds to random
+const min         = 1; //min seconds to random
+
 
 /*----------  CONFIG  ----------*/
 
 
+var sended = 0
 
 const SESSION_FILE_PATH = './session.json';
 let sessionCfg;
@@ -61,8 +68,13 @@ client.on('ready', () => {
     .fromFile(csvFilePath)
     .on('data',(data)=>{
       raw = JSON.parse(data.toString('utf8'))
-      console.log("sending message to " , raw[name_field])
-      send_message(raw[phone_field], text);
+      //get random
+      var random = Math.floor(Math.random() * ((max*1000) - (min*1000))) + (min*1000);
+      // setTimeout(send_message(raw[name_field], raw[phone_field], text, random), random )
+      (function(name, phone, text, timeout){
+      setTimeout(send_message(name, phone, text, timeout), timeout)
+      }(raw[name_field], raw[phone_field], text, random))
+
     })
     .on('done',(error)=>{
       console.log('\ncsv done\n.-')
@@ -75,12 +87,15 @@ client.on('change_state', (state) => {
     console.log(state);
 });
 
-const send_message = function(number, text){
+const send_message = async function(name, number, text, random){
+    // await sleep(name, number, text)
+    sended++
+    console.log(sended + ".- sending message to " , name, "(" + Math.round(random/1000) + " seg)")
     // Getting chatId from the number.
     // we have to delete "+" from the beginning and add "@c.us" at the end of the number.
     //const chatId = number.substring(1) + "@c.us";
     const chatId = number + "@c.us";
 
-    client.sendMessage(chatId, text);
-//    console.log('sendig message to ', number);
+    // client.sendMessage(chatId, text);
+   // console.log('sendig message to ', number);
 }
